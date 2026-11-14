@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Developer Portfolio</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background-color: #020408; /* Deep interstellar black */
+            color: #e2e8f0;
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            perspective: 1200px;
+        }
+        /* Three.js Background Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 3D Interactive Glass Cards */
+        .card-3d {
+            background: rgba(10, 15, 30, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+        .card-3d:hover {
+            border-color: rgba(56, 189, 248, 0.7);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.9), 0 0 35px rgba(56, 189, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 2rem;
+            margin-bottom: 2.5rem;
+        }
+        header h1 {
+            font-size: 3rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            transform: translateZ(40px);
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        }
+        header h2 {
+            font-size: 1.5rem;
+            color: #38bdf8;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            transform: translateZ(30px);
+        }
+        header p {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            transform: translateZ(25px);
+        }
+        
+        /* Interactive Links / Buttons */
+        .social-links {
+            transform: translateZ(30px);
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .social-links a:hover {
+            transform: translateY(-6px) scale(1.06) translateZ(15px);
+            box-shadow: 0 15px 30px rgba(2, 132, 199, 0.7), 0 0 25px rgba(56, 189, 248, 0.8);
+            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+        }
+
+        section {
+            padding: 2.5rem 0;
+        }
+        section > h2 {
+            font-size: 1.85rem;
+            color: #f8fafc;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        .about-card {
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .about-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            transform: translateZ(20px);
+        }
+
+        /* Live 3D Interactive Code Terminal Widget */
+        .terminal-box {
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #38bdf8;
+            margin-bottom: 2.5rem;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateZ(15px);
+        }
+        .terminal-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-green { background: #10b981; }
+        .terminal-body p {
+            margin: 6px 0;
+            opacity: 0.9;
+        }
+        .prompt { color: #10b981; }
+        .highlight-code { color: #f472b6; }
+
+        /* Interactive Skills Section & Popup Box */
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .skill-tag {
+            background: rgba(10, 15, 30, 0.85);
+            color: #38bdf8;
+            padding: 10px 18px;
+            border-radius: 24px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .skill-tag:hover {
+            transform: translateY(-5px) scale(1.1);
+            border-color: rgba(56, 189, 248, 0.9);
+            background: rgba(56, 189, 248, 0.2);
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.5);
+            color: #f8fafc;
+        }
+
+        /* Interactive Skill Info Display Card */
+        .skill-info-box {
+            background: rgba(10, 22, 40, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: none; /* Hidden by default until hovered/clicked */
+            animation: fadeIn 0.3s ease forwards;
+        }
+        .skill-info-box h3 {
+            color: #38bdf8;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        .skill-info-box p {
+            color: #cbd5e1;
+            font-size: 1rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Projects Grid & Cards */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .project-card {
+            background: rgba(10, 15, 30, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 20px;
+            padding: 2.2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform-style: preserve-3d;
+        }
+        .project-card:hover {
+            transform: translateY(-12px) scale(1.03);
+            border-color: rgba(56, 189, 248, 0.8);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        .project-card h3 {
+            color: #f8fafc;
+            margin-bottom: 0.75rem;
+            font-size: 1.35rem;
+            font-weight: 600;
+        }
+        .project-card p {
+            color: #94a3b8;
+            font-size: 0.98rem;
+            margin-bottom: 1.5rem;
+        }
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .project-tags span {
+            background: rgba(2, 6, 23, 0.9);
+            color: #a78bfa;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+        }
+        footer {
+            text-align: center;
+            padding: 3rem 0 1rem 0;
+            color: #64748b;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(56, 189, 248, 0.1);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Three.js Render Target -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <!-- Hero Section with 3D Tilt -->
+        <header class="card-3d" id="hero-card">
+            <h1>Arun Chhibber</h1>
+            <h2>Software Developer</h2>
+            <p>BSc Computer Science Graduate — Algoma University</p>
+            <div class="social-links">
+                <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+                <a href="https://github.com" target="_blank">GitHub</a>
+                <a href="mailto:your_email@example.com">Contact</a>
+            </div>
+        </header>
+
+        <!-- About Section with 3D Tilt -->
+        <section>
+            <h2>About Me</h2>
+            <div class="card-3d about-card" id="about-card">
+                <p class="about-text">
+                    Software developer building full-stack web applications, scalable backend systems, and applied AI solutions. Focused on writing clean, maintainable code and delivering end-to-end software from concept to working product.
+                </p>
+            </div>
+        </section>
+
+        <!-- Live 3D Interactive Code Terminal Widget -->
+        <div class="terminal-box card-3d">
+            <div class="terminal-header">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <div class="terminal-body" id="terminal-text">
+                <p><span class="prompt">&gt;</span> Initializing Dev Environment...</p>
+                <p><span class="prompt">&gt;</span> Loading stack: <span class="highlight-code">Python, Java, Node.js, React</span></p>
+                <p><span class="prompt">&gt;</span> Status: <span style="color: #34d399;">Ready for deployment &amp; hire.</span></p>
+            </div>
+        </div>
+
+        <!-- Interactive Skills Section -->
+        <section>
+            <h2>Tech Stack & Skills</h2>
+            <div class="skills-grid" id="skills-container">
+                <span class="skill-tag" data-skill="Python">Python</span>
+                <span class="skill-tag" data-skill="Java">Java</span>
+                <span class="skill-tag" data-skill="JavaScript">JavaScript</span>
+                <span class="skill-tag" data-skill="Node.js">Node.js</span>
+                <span class="skill-tag" data-skill="React.js">React.js</span>
+                <span class="skill-tag" data-skill="HTML / CSS">HTML / CSS</span>
+                <span class="skill-tag" data-skill="Git">Git Version Control</span>
+                <span class="skill-tag" data-skill="AI">Artificial Intelligence (AI)</span>
+                <span class="skill-tag" data-skill="OOP">Object-Oriented Programming (OOP)</span>
+            </div>
+
+            <!-- Dynamic Skill Info Drawer (Shows on Hover/Click, hides on mouse leave) -->
+            <div class="skill-info-box" id="skill-display-box">
+                <h3 id="skill-title">Hover over a skill</h3>
+                <p id="skill-desc">Explore what core competencies and projects were built using this technology.</p>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section>
+            <h2>Builds</h2>
+            <div class="projects-grid">
+                <!-- Project 1 -->
+                <div class="project-card">
+                    <div>
+                        <h3>Hand Sign to Text Translator</h3>
+                        <p>Computer vision model built in Python using Convolutional Neural Networks (CNNs) to detect hand gestures and translate sign language into real-time text.</p>
+                    </div>
+                    <div class="project-tags">
+                        <span>Python</span>
+                        <span>AI</span>
+                        <span>Computer Vision</span>
+                        <span>CNN</span>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="project-card">
+                    <div>
+                        <h3>Online File Uploader & Manager</h3>
+                        <p>Full-stack web application powered by a Node.js backend handling multipart file parsing, server-side storage, and custom validation with a responsive CSS frontend.</p>
+                    </div>
+                    <div class="project-tags">
+                        <span>Node.js</span>
+                        <span>JavaScript</span>
+                        <span>CSS</span>
+                        <span>REST APIs</span>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="project-card">
+                    <div>
+                        <h3>Gym Membership Management System</h3>
+                        <p>Modular management application engineered in Java utilizing Object-Oriented Programming principles to handle user registration, tiers, and data tracking.</p>
+                    </div>
+                    <div class="project-tags">
+                        <span>Java</span>
+                        <span>OOP</span>
+                        <span>Data Structures</span>
+                        <span>Algorithms</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Three.js Neural Network & Skill Drawer Script -->
+    <script>
+        // --- 1. Skill Interactive Drawer Logic ---
+        const skillData = {
+            "Python": "Applied in machine learning pipelines, computer vision image processing, and algorithm scripting. Used to engineer the CNN Hand Sign to Text Translator model.",
+            "Java": "Applied in building modular enterprise architectures and backend systems. Utilized Object-Oriented Programming (OOP) principles to construct the Gym Membership Management System.",
+            "JavaScript": "Used for dynamic client-side DOM manipulation, asynchronous event handling, and driving interactive UI components across full-stack applications.",
+            "Node.js": "Engineered robust backend server architectures, handling RESTful routing, multipart file parsing, server-side storage, and custom validation middleware.",
+            "React.js": "Utilized component-driven architecture, state management hooks, and responsive UI design to build modern, interactive single-page web applications.",
+            "HTML / CSS": "Crafted clean, accessible semantic markup paired with advanced CSS flexbox, glassmorphism filters, and 3D perspective styling for responsive interfaces.",
+            "Git": "Maintained clean version control history, branch management, modular commits, and remote repository deployment workflows via terminal interface.",
+            "AI": "Studied and applied Neural Network structures, Convolutional Neural Networks (CNNs), and feature extraction for real-time computer vision recognition.",
+            "OOP": "Utilized core Object-Oriented principles—encapsulation, inheritance, polymorphism, and abstraction—to design maintainable, modular software."
+        };
+
+        const skillTags = document.querySelectorAll('.skill-tag');
+        const skillBox = document.getElementById('skill-display-box');
+        const skillTitle = document.getElementById('skill-title');
+        const skillDesc = document.getElementById('skill-desc');
+
+        skillTags.forEach(tag => {
+            tag.addEventListener('mouseenter', () => {
+                const skillName = tag.getAttribute('data-skill');
+                skillTitle.textContent = skillName;
+                skillDesc.textContent = skillData[skillName] || "Core technical competency applied in software engineering projects.";
+                skillBox.style.display = 'block';
+            });
+        });
+
+        // Hide when mouse leaves the entire skills container
+        document.getElementById('skills-container').addEventListener('mouseleave', () => {
+            skillBox.style.display = 'none';
+        });
+
+        // --- 2. Three.js Background Neural Network Animation ---
+        const canvas = document.querySelector('#bg-canvas');
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 7;
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const codeSnippets = [
+            "</>", "{ }", "def main()", "import React", "public class", 
+            "npm start", "git push", "async/await", "Python", "Java", 
+            "Node.js", "AI / CNN", "REST API", "git commit", "return true;",
+            "const app = express()", "class NeuralNet", "SELECT * FROM users"
+        ];
+
+        const codeGroup = new THREE.Group();
+        scene.add(codeGroup);
+
+        const nodes = [];
+
+        function createCodeNode(text) {
+            const canvas2D = document.createElement('canvas');
+            canvas2D.width = 280;
+            canvas2D.height = 70;
+            const ctx = canvas2D.getContext('2d');
+
+            ctx.fillStyle = 'rgba(10, 22, 40, 0.85)';
+            ctx.fillRect(0, 0, canvas2D.width, canvas2D.height);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(2, 2, canvas2D.width - 4, canvas2D.height - 4);
+
+            ctx.font = 'bold 20px "Fira Code", monospace';
+            ctx.fillStyle = '#38bdf8';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, canvas2D.width / 2, canvas2D.height / 2);
+
+            const texture = new THREE.CanvasTexture(canvas2D);
+            const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.95 });
+            const sprite = new THREE.Sprite(material);
+
+            sprite.position.set(
+                (Math.random() - 0.5) * 16,
+                (Math.random() - 0.5) * 14,
+                (Math.random() - 0.5) * 10
+            );
+            sprite.scale.set(2.0, 1.0, 1);
+            
+            sprite.userData = {
+                vx: (Math.random() - 0.5) * 0.006,
+                vy: (Math.random() - 0.5) * 0.006,
+                vz: (Math.random() - 0.5) * 0.004
+            };
+
+            codeGroup.add(sprite);
+            nodes.push(sprite);
+            return sprite;
+        }
+
+        for (let i = 0; i < 32; i++) {
+            const snippet = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+            createCodeNode(snippet);
+        }
+
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color: 0x38bdf8,
+            transparent: true,
+            opacity: 0.35
+        });
+
+        const maxConnections = 60;
+        const lineGeometry = new THREE.BufferGeometry();
+        const linePositions = new Float32Array(maxConnections * 6);
+        lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+        const neuralNetworkLines = new THREE.LineSegments(lineGeometry, lineMaterial);
+        scene.add(neuralNetworkLines);
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - window.innerWidth / 2) / 300;
+            mouseY = (event.clientY - window.innerHeight / 2) / 300;
+        });
+
+        const cards = document.querySelectorAll('.card-3d');
+
+        document.addEventListener('mousemove', (e) => {
+            const xCenter = window.innerWidth / 2;
+            const yCenter = window.innerHeight / 2;
+            const rotateX = (e.clientY - yCenter) / 25;
+            const rotateY = (e.clientX - xCenter) / 25;
+
+            cards.forEach(card => {
+                card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+            });
+        });
+
+        document.addEventListener('mouseleave', () => {
+            cards.forEach(card => {
+                card.style.transform = `rotateX(0deg) rotateY(0deg) translateY(0px)`;
+            });
+        });
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            codeGroup.rotation.y = elapsedTime * 0.025 + targetX;
+            codeGroup.rotation.x = -elapsedTime * 0.015 + targetY;
+
+            nodes.forEach(node => {
+                node.position.x += node.userData.vx;
+                node.position.y += node.userData.vy;
+                node.position.z += node.userData.vz;
+
+                if (Math.abs(node.position.x) > 9) node.userData.vx *= -1;
+                if (Math.abs(node.position.y) > 8) node.userData.vy *= -1;
+                if (Math.abs(node.position.z) > 6) node.userData.vz *= -1;
+            });
+
+            let vertexIndex = 0;
+            const positions = neuralNetworkLines.geometry.attributes.position.array;
+
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dist = nodes.position.distanceTo(nodes[j].position);
+                    if (dist < 4.2 && vertexIndex < maxConnections * 6) {
+                        positions[vertexIndex++] = nodes.position.x;
+                        positions[vertexIndex++] = nodes.position.y;
+                        positions[vertexIndex++] = nodes.position.z;
+
+                        positions[vertexIndex++] = nodes[j].position.x;
+                        positions[vertexIndex++] = nodes[j].position.y;
+                        positions[vertexIndex++] = nodes[j].position.z;
+                    }
+                }
+            }
+            for (let k = vertexIndex; k < linePositions.length; k++) {
+                positions[k] = 0;
+            }
+            neuralNetworkLines.geometry.attributes.position.needsUpdate = true;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
