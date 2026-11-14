@@ -554,11 +554,12 @@
 
             for (let i = 0; i < nodes.length; i++) {
                 for (let j = i + 1; j < nodes.length; j++) {
-                    const dist = nodes.position.distanceTo(nodes[j].position);
+                    // Corrected distance calculation using nodes[i] instead of nodes
+                    const dist = nodes[i].position.distanceTo(nodes[j].position);
                     if (dist < 4.2 && vertexIndex < maxConnections * 6) {
-                        positions[vertexIndex++] = nodes.position.x;
-                        positions[vertexIndex++] = nodes.position.y;
-                        positions[vertexIndex++] = nodes.position.z;
+                        positions[vertexIndex++] = nodes[i].position.x;
+                        positions[vertexIndex++] = nodes[i].position.y;
+                        positions[vertexIndex++] = nodes[i].position.z;
 
                         positions[vertexIndex++] = nodes[j].position.x;
                         positions[vertexIndex++] = nodes[j].position.y;
